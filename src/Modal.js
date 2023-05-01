@@ -1,96 +1,62 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
-function Modal({ showModal, setShowModal, buildings, setBuildings }) {
-  const [buildingName, setBuildingName] = useState('');
-  const [floors, setFloors] = useState(['1F']);
+function Modal(props) {
+  const [name, setName] = useState('');
+  const [places, setPlaces] = useState([]);
 
-  const [newFloor, setNewFloor] = useState('');
-  const [newLocation, setNewLocation] = useState('');
-  const [locations, setLocations] = useState([]);
-
-  const addFloor = () => {
-    const newFloor = `${floors.length + 1}F`;
-    setFloors([...floors, newFloor]);
-    setNewFloor('');
-  };
-  
-
-  const addLocation = () => {
-    setLocations([...locations, newLocation]);
-    setNewLocation('');
+  const handleNameChange = (event) => {
+    setName(event.target.value);
   };
 
-  const onSubmit = () => {
+  const handlePlaceChange = (event, index) => {
+    const newPlaces = [...places];
+    newPlaces[index] = event.target.value;
+    setPlaces(newPlaces);
+  };
+
+  const handleAddPlace = () => {
+    setPlaces([...places, '']);
+  };
+
+  const handleRemovePlace = (index) => {
+    const newPlaces = [...places];
+    newPlaces.splice(index, 1);
+    setPlaces(newPlaces);
+  };
+
+  const handleSubmit = () => {
     const newBuilding = {
-      id: buildings.length + 1,
-      name: buildingName,
-      places: locations,
+      id: Date.now(),
+      name: name,
+      places: places.filter((place) => place !== ''),
     };
-    setBuildings([...buildings, newBuilding]);
-    setShowModal(false);
+    props.onSubmit(newBuilding);
   };
-  
 
   return (
-    <div className={showModal ? 'modal display-block' : 'modal display-none'}>
-      <div className="modal-main">
-        <div className="modal-header">
-          <h2>건물 등록</h2>
-        </div>
-        <div className="modal-content">
-          <label>건물명</label>
-          <input
-            type="text"
-            value={buildingName}
-            onChange={(e) => setBuildingName(e.target.value)}
-          />
-          <div>
-          <label>층</label>
-          <div className="floors">
-            {floors.map((floor, index) => (
-              <div key={index} className="floor">
-                {floor}
-                <button onClick={() => setFloors(floors.filter((f, i) => i !== index))}>
-                  x
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="add-floor">
-            <button onClick={addFloor}>+추가</button>
-          </div>
+    <div className="modal">
+      <div className="modal-content">
+        <span className="close" onClick={() => props.onCancel()}>
           
-          </div>
-
-          <label>세부장소명</label>
-          {locations.map((location, index) => (
-            <div key={index} className="location">
-              <input type="text" value={location} onChange={(e) => {
-                  let newLocations = [...locations];
-                  newLocations[index] = e.target.value;
-                  setLocations(newLocations);
-                }} />
-              <button onClick={() => {
-                  let newLocations = [...locations];
-                  newLocations.splice(index, 1);
-                  setLocations(newLocations);
-                }}>x</button>
+        </span>
+        <h2>건물 등록</h2>
+        <div>
+          <label>건물명:</label>
+          <input type="text" value={name} onChange={handleNameChange} />
+        </div>
+        <div>
+          <label>세부장소:</label>
+          {places.map((place, index) => (
+            <div key={index}>
+              <input type="text" value={place} onChange={(event) => handlePlaceChange(event, index)} />
+              <button onClick={() => handleRemovePlace(index)}>삭제</button>
             </div>
           ))}
-          <div className="add-location">
-            <input
-              type="text"
-              value={newLocation}
-              onChange={(e) => setNewLocation(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') addLocation();
-              }}
-            />
-          </div>
+          <button onClick={handleAddPlace}>추가</button>
         </div>
-        <div className="modal-footer">
-          <button onClick={() => setShowModal(false)}>취소</button>
-          <button onClick={onSubmit}>등록하기</button>
+        <div>
+          <button onClick={handleSubmit}>등록</button>
+          <button onClick={() => props.onCancel()}>취소</button>
         </div>
       </div>
     </div>
